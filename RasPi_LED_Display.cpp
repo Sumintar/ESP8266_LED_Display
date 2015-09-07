@@ -26,8 +26,8 @@ int dataPinB = 2;
 int brightness = 960; // range is 0-1024
 
 uint8_t buffer[128];
-std::string message = "This is a test       ";
-//int length = message.length();
+std::string message = "wubba lubba dub dub      ";
+int length = message.length();
 
 // Functions
 void writeDisplay(void);
@@ -40,15 +40,17 @@ void clearBuffer(void);
 // Main
 int main (void)
 {
-  std::cout << message << std::endl;
+  std::cout << length << std::endl;
   signal(SIGINT,sigint);
   wiringPiSetup () ;
   pinSetup();
   for (;;)
   {
-    for(uint8_t letter = 0; letter < 96; letter++){// Scroll through entire font
-      for(uint8_t i = 0; i < fontInfo[letter][0]*2 + 1; i+=2){
-        if(fontInfo[letter][0]*2 == i){// Place one pixel spaces between each character
+    const char* strdata = message.c_str();
+
+    for(uint8_t letter = 0; letter < message.length(); letter++){// Scroll through entire font
+      for(uint8_t i = 0; i < fontInfo[strdata[letter]-32][0]*2 + 1; i+=2){
+        if(fontInfo[strdata[letter]-32][0]*2 == i){// Place one pixel spaces between each character
 
           for(uint8_t j = 0; j < 128; j+=2){
             buffer[j] = buffer[j+2];
@@ -57,18 +59,15 @@ int main (void)
 
           buffer[127]=0x00;
           buffer[126]=0x00;
-        }else{
-
+        } else {
+          ::cout << strdata[letter] << std::endl;
           for(uint8_t j = 0; j < 128; j+=2){// Scroll buffer one pixel at a time
             buffer[j] = buffer[j+2];
             buffer[j+1] = buffer[j+3];
           }
 
-          //buffer[127] = pgm_read_byte_near(font + fontInfo[message[letter]-32][1] + i + 1);
-          //buffer[126] = pgm_read_byte_near(font + fontInfo[message[letter]-32][1] + i);
-
-          buffer[127] = font[fontInfo[letter][1] + i + 1];
-          buffer[126] = font[fontInfo[letter][1] + i];
+          buffer[127] = font[fontInfo[strdata[letter]-32][1] + i + 1];
+          buffer[126] = font[fontInfo[strdata[letter]-32][1] + i];
         }
         writeDisplay();// Write buffer to display
         delay(40);
