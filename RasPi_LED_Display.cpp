@@ -1,5 +1,13 @@
+//
+// g++ -o led RasPi_LED_Display.cpp -lwiringPi
+//
+#include <iostream>
+#include <stdio.h>
+#include <cstdlib>
 #include <wiringPi.h>
-//#include <string>
+#include <signal.h>
+#include <string>
+#include <cstring>
 #include "font.h"
 
 #define uint8_t char
@@ -18,17 +26,22 @@ int dataPinB = 2;
 int brightness = 960; // range is 0-1024
 
 uint8_t buffer[128];
-//string message = "This is a test       ";
+std::string message = "This is a test       ";
 //int length = message.length();
 
+// Functions
 void writeDisplay(void);
 void shiftOut(uint8_t dataPinA, uint8_t dataPinB, uint8_t clockPin, uint8_t valA, uint8_t valB);
 void pinSetup(void);
+void sigint(int a);
+void clearBuffer(void);
 
-
+// BEGIN Logic
 // Main
 int main (void)
 {
+  std::cout << message << std::endl;
+  signal(SIGINT,sigint);
   wiringPiSetup () ;
   pinSetup();
   for (;;)
@@ -87,6 +100,19 @@ void shiftOut(uint8_t dataPinA, uint8_t dataPinB, uint8_t clockPin, uint8_t valA
     digitalWrite(clockPin, HIGH);
     digitalWrite(clockPin, LOW);
   }
+}
+
+// capture ctrl-c sigint
+void sigint(int a) {
+  clearBuffer();
+  printf("Shutting down...\n");
+  exit(a);
+}
+
+// writes a blank buffer to display
+void clearBuffer(void) {
+  memset(buffer, 0, sizeof(buffer));
+  writeDisplay();
 }
 
 // Pin setup
